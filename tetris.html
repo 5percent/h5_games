@@ -2,7 +2,7 @@
 <head>
     <style type="text/css">
         #canvas {position:relative;box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);border-radius:2px;float:left;}
-        #main {width:400px;margin:60px auto;}
+        #main {width:460px;margin:60px auto;}
         #dashbord {float:left;margin-left:30px;}
         #text {color:#0088cc;font-size:20px;}
         #score {color:#999;font-size:34px;margin:10px 0 60px;}
@@ -28,12 +28,21 @@
             document.getElementById("start-btn").style.display = "none";
             clearInterval(clock);
             var speed = 500;
+            var score = 0;
             var canvas = document.getElementById("canvas");
             var ch = canvas.height;
             var cw = canvas.width;
             var ctx = canvas.getContext("2d");
             ctx.beginPath();
             ctx.lineWidth = "1"; 
+            ctx.clearRect(0,0,cw,ch);
+
+            function game_over(){
+                clearInterval(clock);
+                document.getElementById("prompt").style.display = "block";
+                document.getElementById("start-btn").style.display = "";
+                document.getElementById("start-btn").innerHTML = "restart";
+            }
 
             var pool = {
                 body : [],
@@ -49,30 +58,51 @@
                     }
                 },
                 clean: function(){
-                    var map = [];
-                    for (var i in this.body){
-                        map[this.body[i].y] |= 1<<this.body[i].x;
+		            var map = this.map();
+                    if(map === false){
+                        return;
                     }
-
+                    var count = 0;
                     for(var i=0; i<20; i++){
                         if(map[i] == 4095){
-                            ctx.clearRect(0, i * 22+5, 272, 20);
-                        
+            			    var new_body = [];
                             for (var k in this.body){
                                 if(this.body[k].y == i){
-                                    console.log(k);
-                                    this.body.splice(k,1);
+                       	 	        ctx.clearRect(this.body[k].x * 22+5, this.body[k].y * 22+5, 20, 20);
                                 }
-                                else if(this.body[k].y < i){
-                                    console.log(k);
-//                                    ctx.clearRect(0, i * 22+5, 272, 20);
+                                else {
+                                    new_body.push(this.body[k]);
+                                }
+                            }
+
+			                this.body = new_body;
+                            for (var k in this.body){
+                                if(this.body[k].y < i){
+                       	 	        ctx.clearRect(this.body[k].x * 22+5, this.body[k].y * 22+5, 20, 20);
                                     this.body[k].y++;
                                 }
                             }
+                            count++;
                         }
                     }
+                    if (count>0){
+                        score += (2*count-1) * 10;
+                        document.getElementById("score").innerHTML = score;
+                    }
 
-                } 
+                    this.draw();
+                },
+                map  : function(){
+                    var map = [];
+                    for (var i in this.body){
+                        if (this.body[i].y == 0){
+                            game_over();
+                            return false;
+                        }
+                        map[this.body[i].y] |= 1<<this.body[i].x;
+                    }
+                    return map;
+                }
             };
 
             var type_list = ["o", "i", "l", "j", "z", "s", "t"]
@@ -277,10 +307,7 @@
                 }
 
                 tetrimino.draw = function(){
-                    for (var i in this.body){
-                        ctx.clearRect(this.body[i].x * 22+5, this.body[i].y * 22+5, 20, 20);
-                    }
-
+                    this.clear();
                     this.cal_body();
                     ctx.fillStyle = "#0088CC";
                     for (var i in this.body){
@@ -288,6 +315,12 @@
                         ctx.stroke();
                     }
                 };
+
+                tetrimino.clear = function(){
+                    for (var i in this.body){
+                        ctx.clearRect(this.body[i].x * 22+5, this.body[i].y * 22+5, 20, 20);
+                    }
+                }
 
                 tetrimino.check = function(){
                     var body_bak = this.body;
@@ -334,7 +367,9 @@
                 return Tetriminos(type_list[random_num]);
             }
 
-            var tetrimino = null;
+            var tetrimino = random_one();
+            tetrimino.draw();
+
             document.onkeydown = function(event){
                 if(!tetrimino)
                     return false;
@@ -367,21 +402,27 @@
                         }
                         tetrimino.draw();
                         break;
+                    case 32:
+                        tetrimino.clear();
+                        while(tetrimino.check_bottom() ){
+                            tetrimino.offset.y++;
+                            tetrimino.cal_body();
+                        }
+                        tetrimino.draw();
+                        pool.put(tetrimino.body);
+                        tetrimino = random_one();
+                        break;
                 }
             }
 
             var main = function(){
-                if (tetrimino == null){
-                    tetrimino = random_one();
-                }
-                else{
+                if (tetrimino != null){
                     tetrimino.offset.y++;
                 }
 
                 if(!tetrimino.check_bottom()){
                     pool.put(tetrimino.body);
-                    tetrimino = null;
-                    return;
+                    tetrimino = random_one();
                 }
                 tetrimino.draw();
             };
@@ -390,3 +431,4 @@
         }
     </script>
 </body>
+
