@@ -58,14 +58,14 @@
                     }
                 },
                 clean: function(){
-		            var map = this.map();
+                    var map = this.map();
                     if(map === false){
                         return;
                     }
                     var count = 0;
                     for(var i=0; i<20; i++){
                         if(map[i] == 4095){
-            			    var new_body = [];
+                            var new_body = [];
                             for (var k in this.body){
                                 if(this.body[k].y == i){
                        	 	        ctx.clearRect(this.body[k].x * 22+5, this.body[k].y * 22+5, 20, 20);
