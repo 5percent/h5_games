@@ -1,20 +1,37 @@
 <!DOCTYPE html>
 <head>
+    <meta charset="utf8">
     <style type="text/css">
-        #canvas {position:relative;box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);border-radius:2px;float:left;}
-        #main {width:460px;margin:60px auto;}
+        #canvas {position:relative;box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);border-radius:2px;float:left;margin-right:10px;}
+        #canvas2 {margin-bottom:50px;}
+        #main {width:640px;margin:60px auto;}
         #dashbord {float:left;margin-left:30px;}
-        #text {color:#0088cc;font-size:20px;}
+        .text {color:#0088cc;font-size:20px;}
         #score {color:#999;font-size:34px;margin:10px 0 60px;}
         #prompt {color:#999;font-size:34px;margin:10px 0 30px;display:none;}
         #start-btn {display:inline-block;text-decoration:none;width:50px;height:20px;padding:4px;line-height:20px;background:#0088cc;color:#fff;text-align:center;border-radius:2px;}
+        .left {float:left;}
+        p {padding-left:30px;}
+        p label {display:inline-block;width:25px;text-align:center;margin-right:20px;}
     </style>
 </head>
 <body>
     <div id="main">
+        <div class="left">
+            <div class="text">Next:</div>
+            <canvas id="canvas2" class="left" width="175px" height="175px"></canvas>
+            <div class="info">
+                <p><label>→</label>right</p>
+                <p><label>←</label>left</p>
+                <p><label>↓</label>down</p>
+                <p><label>↑</label>rotate</p>
+                <p><label>space</label>falldown</p>
+                <p><label>p</label>pause</p>
+            </div>
+        </div>
         <canvas id="canvas" width="272px" height="448px"></canvas>
         <div id="dashbord">
-            <div id="text">Score</div>
+            <div class="text">Score</div>
             <div id="score">0</div>
             <div id="prompt">game over!</div>
             <a href="javascript:void(0);" onclick="run();" id="start-btn">start</a>
@@ -36,6 +53,37 @@
             ctx.beginPath();
             ctx.lineWidth = "1"; 
             ctx.clearRect(0,0,cw,ch);
+
+            var canvas2 = document.getElementById("canvas2");
+            var ch2 = canvas2.height;
+            var cw2 = canvas2.width;
+            var ctx2 = canvas2.getContext("2d");
+            ctx2.beginPath();
+            ctx2.lineWidth = "1"; 
+
+            function pause(){
+                if(clock){
+                    clearInterval(clock);
+                    clock = null;
+                }
+                else
+                    clock = setInterval(main, speed);
+            }
+
+            function preview(tetrimino){
+                var bak_offset = tetrimino.offset;
+                tetrimino.offset = {x:2, y:2}
+                tetrimino.cal_body();
+
+                ctx2.clearRect(0,0,cw2,ch2);
+                ctx2.fillStyle = "#0088CC";
+                for (var i in tetrimino.body){
+                    ctx2.fillRect(tetrimino.body[i].x * 22+5, tetrimino.body[i].y * 22+5, 20, 20);
+                    ctx2.stroke();
+                }
+
+                tetrimino.offset = bak_offset;
+            }
 
             function game_over(){
                 clearInterval(clock);
@@ -368,6 +416,7 @@
             }
 
             var tetrimino = random_one();
+            var next_t = random_one();
             tetrimino.draw();
 
             document.onkeydown = function(event){
@@ -410,7 +459,12 @@
                         }
                         tetrimino.draw();
                         pool.put(tetrimino.body);
-                        tetrimino = random_one();
+                        tetrimino = next_t;
+                        next_t = random_one();
+                        preview(next_t);
+                        break;
+                    case 80:
+                        pause();
                         break;
                 }
             }
@@ -422,7 +476,9 @@
 
                 if(!tetrimino.check_bottom()){
                     pool.put(tetrimino.body);
-                    tetrimino = random_one();
+                    tetrimino = next_t;
+                    next_t = random_one();
+                    preview(next_t);
                 }
                 tetrimino.draw();
             };
