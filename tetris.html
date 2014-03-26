@@ -39,12 +39,43 @@
     </div>
     <script>
         var clock;
+        var level = {
+            speed: 500,
+            color: "#0088CC",
+            num: 0,
+            levelMap:[{
+              speed: 500,
+              color: "#0088CC"
+            },{
+              speed: 400,
+              color: "#9966cc"
+            },{
+              speed: 300,
+              color: "#5bc0de"
+            },{
+              speed: 200,
+              color: "#62c462"
+            },{
+              speed: 100,
+              color: "#fbb450"
+            },{
+              speed: 50,
+              color: "#ee5f5b"
+            }],
+            levelup: function() {
+              this.num++;
+              this.num = this.num >= this.levelMap.length ? this.levelMap.length-1 : this.num;
+              this.speed = this.levelMap[this.num].speed;
+              this.color = this.levelMap[this.num].color;
+            },
+        };
+
         function run(){
             document.getElementById("score").innerHTML = "0";
             document.getElementById("prompt").style.display = "none";
             document.getElementById("start-btn").style.display = "none";
             clearInterval(clock);
-            var speed = 500;
+
             var score = 0;
             var canvas = document.getElementById("canvas");
             var ch = canvas.height;
@@ -67,7 +98,7 @@
                     clock = null;
                 }
                 else
-                    clock = setInterval(main, speed);
+                    clock = setInterval(main, level.speed);
             }
 
             function preview(tetrimino){
@@ -76,7 +107,7 @@
                 tetrimino.cal_body();
 
                 ctx2.clearRect(0,0,cw2,ch2);
-                ctx2.fillStyle = "#0088CC";
+                ctx2.fillStyle = level.color;
                 for (var i in tetrimino.body){
                     ctx2.fillRect(tetrimino.body[i].x * 22+5, tetrimino.body[i].y * 22+5, 20, 20);
                     ctx2.stroke();
@@ -99,7 +130,7 @@
                     this.clean();
                 },
                 draw : function(){
-                    ctx.fillStyle = "#0088CC";
+                    ctx.fillStyle = level.color;
                     for (var i in this.body){
                         ctx.fillRect(this.body[i].x * 22+5, this.body[i].y * 22+5, 20, 20);
                         ctx.stroke();
@@ -136,6 +167,11 @@
                     if (count>0){
                         score += (2*count-1) * 10;
                         document.getElementById("score").innerHTML = score;
+                        if (Math.floor(score/100) > level.num) {
+                          level.levelup();
+                          clearInterval(clock);
+                          clock = setInterval(main, level.speed);
+                        }
                     }
 
                     this.draw();
@@ -357,7 +393,7 @@
                 tetrimino.draw = function(){
                     this.clear();
                     this.cal_body();
-                    ctx.fillStyle = "#0088CC";
+                    ctx.fillStyle = level.color;
                     for (var i in this.body){
                         ctx.fillRect(this.body[i].x * 22+5, this.body[i].y * 22+5, 20, 20);
                         ctx.stroke();
@@ -483,7 +519,7 @@
                 tetrimino.draw();
             };
 
-            clock = setInterval(main, speed);
+            clock = setInterval(main, level.speed);
         }
     </script>
 </body>
