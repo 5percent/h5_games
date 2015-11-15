@@ -4,7 +4,7 @@
     <style type="text/css">
         #canvas {position:relative;box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);border-radius:2px;float:left;margin-right:10px;}
         #canvas2 {margin-bottom:50px;}
-        #main {width:640px;margin:60px auto;}
+        #main {width:660px;margin:60px auto;}
         #dashbord {float:left;margin-left:30px;}
         .text {color:#0088cc;font-size:20px;}
         #score {color:#999;font-size:34px;margin:10px 0 60px;}
@@ -70,7 +70,15 @@
             },
         };
 
+        function init() {
+          level.speed = 500;
+          level.color = "#0088CC";
+          level.num = 0;
+        }
+
         function run(){
+            init();
+
             document.getElementById("score").innerHTML = "0";
             document.getElementById("prompt").style.display = "none";
             document.getElementById("start-btn").style.display = "none";
@@ -121,6 +129,8 @@
                 document.getElementById("prompt").style.display = "block";
                 document.getElementById("start-btn").style.display = "";
                 document.getElementById("start-btn").innerHTML = "restart";
+                console.log(ctx2,cw2,ch2);
+                ctx2.clearRect(0,0,cw2,ch2);
             }
 
             var pool = {
@@ -167,7 +177,7 @@
                     if (count>0){
                         score += (2*count-1) * 10;
                         document.getElementById("score").innerHTML = score;
-                        if (Math.floor(score/100) > level.num) {
+                        if (Math.floor(score/300) > level.num) {
                           level.levelup();
                           clearInterval(clock);
                           clock = setInterval(main, level.speed);
